@@ -7,11 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.text as text
 import matplotlib.animation as animation
 
-
-
-problems = open('CPC.txt', 'r')
-
-
 class Board:
     """
     The board represents a potentially unsolved Sudoku problem.
@@ -94,14 +89,23 @@ class Board:
                     continue  # We guessed wrong
                 possible_to_solve = new_board.solve()
                 if possible_to_solve is not None:  # Good guess, it was solved
-                    #for artist in self.artists:
-                    #    artist.remove()
-                    plt.cla()
-                    self.fig.canvas.draw()
+                    for artist in new_board.artists:
+                        artist.remove()
+                    plt.clf()
+                    #fig, ax = plt.subplots()
+                    #self.ax = ax
+                    #self.fig = fig
+                    plt.axis([0, 9, 0, 9])
+                    plt.grid(True)
+                    plt.draw()
                     for x in range(0, 9):
                         for y in range (0, 9):
-                            self.get_cell(x, y).assign(possible_to_solve[y][x])
+                            self.get_cell(x, y).val = possible_to_solve[y][x]
+                            self.draw_cell(self.get_cell(x, y), False)
+                    self.fig.canvas.draw()
+                    self.writer.grab_frame()
                     return possible_to_solve
+
             return None
 
     def update(self):
@@ -155,7 +159,7 @@ class Board:
                         cell_x, cell_y = x, y
         return (cell_x, cell_y), cell.get_pos()
 
-    def draw_cell(self, cell):
+    def draw_cell(self, cell, do_grab_frame = True):
         for x in range(0, 9):
             for y in range(0, 9):
                 other_cell = self.get_cell(x, y);
@@ -164,8 +168,9 @@ class Board:
                     self.ax.add_artist(my_text)
                     self.artists.append(my_text)
                     plt.draw()
-                    print "Filled cell " + str(self.solved())
-                    self.writer.grab_frame()
+                    if do_grab_frame:
+                        print "Filled cell " + str(self.solved())
+                        self.writer.grab_frame()
 
     def set_board(self, grid):
         for x in range(0, 9):
@@ -324,6 +329,8 @@ class Cell:
         s += ("] " + str(self.count))
         return s
 
+
+problems = open('CPC.txt', 'r')
 boards = [None] * 50
 summed = 0  # The answer to the euler problem
 start = time.time()
